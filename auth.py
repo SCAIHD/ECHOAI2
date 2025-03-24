@@ -6,6 +6,31 @@ import uuid
 from datetime import datetime, timedelta
 import time
 import database as db
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Get admin credentials from environment variables or Streamlit secrets
+def get_admin_credentials():
+    admin_username = os.getenv("ADMIN_USERNAME")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+    
+    # If not found in environment, check Streamlit secrets
+    if not admin_username and 'ADMIN_USERNAME' in st.secrets:
+        admin_username = st.secrets["ADMIN_USERNAME"]
+    
+    if not admin_password and 'ADMIN_PASSWORD' in st.secrets:
+        admin_password = st.secrets["ADMIN_PASSWORD"]
+    
+    # Fallback to defaults if not set
+    if not admin_username:
+        admin_username = "admin"
+    
+    if not admin_password:
+        admin_password = "admin123"
+        
+    return admin_username, admin_password
 
 # Initialize session state for authentication
 def init_auth_session_state():
@@ -49,17 +74,17 @@ def check_password():
     if user_count == 0:
         # Create default admin user
         admin_id = str(uuid.uuid4())
-        admin_password = "admin123"  # Change this in production!
+        admin_username, admin_password = get_admin_credentials()
         admin_pass_hash = hashlib.sha256(admin_password.encode()).hexdigest()
         
         db.save_user(
             user_id=admin_id,
-            username="admin",
+            username=admin_username,
             name="Administrator",
             email="admin@example.com",
             password_hash=admin_pass_hash
         )
-        st.success("Default admin user created. Username: admin, Password: admin123")
+        st.success(f"Default admin user created. Username: {admin_username}, Password: {admin_password}")
         st.warning("Please change the default password after logging in!")
     
     # Login form
@@ -83,7 +108,7 @@ def check_password():
             st.session_state.login_time = time.time()
             st.success(f"Welcome, {user['name']}!")
             time.sleep(1)  # Give time for the success message to be seen
-            st.experimental_rerun()
+            st.rerun()
             return True
         else:
             st.error("Invalid username or password")
@@ -129,7 +154,7 @@ def create_account():
         ):
             st.success("Account created! You can now log in.")
             time.sleep(1)  # Give time for success message
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("There was a problem creating your account. Please try a different username.")
 
@@ -143,7 +168,7 @@ def logout():
         st.session_state.login_time = None
         st.success("You have been logged out.")
         time.sleep(1)  # Give time for the success message to be seen
-        st.experimental_rerun()
+        st.rerun()
 
 def get_current_user():
     """Returns the current user's information"""
