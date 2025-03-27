@@ -3,6 +3,7 @@ import json
 import os
 import datetime
 from pathlib import Path
+import streamlit as st
 
 # Create the database directory if it doesn't exist
 DB_DIR = Path("./data")
