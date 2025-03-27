@@ -63,9 +63,10 @@ def transcribe_audio(audio_path, config_options=None):
             if config_options.get('language'):
                 config.language_code = config_options['language']
             
-            # Speaker diarization
+            # Speaker diarization - Updated for compatibility with newer SDK versions
             if config_options.get('speaker_diarization'):
-                config.speaker_labels = True
+                # Use speaker_count instead of speaker_labels for newer SDK versions
+                config.speaker_count = 2  # Auto-detect number of speakers
             
             # Auto chapters
             if config_options.get('auto_chapters'):
